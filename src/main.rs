@@ -1,11 +1,13 @@
-#![deny(warnings)]
+#![feature(proc_macro_hygiene, decl_macro)]
+#[macro_use] extern crate rocket;
+
 use std::convert::Infallible;
-use hyper::service::{make_service_fn, service_fn};
-use hyper::{Body, Request, Response, Server, Method, StatusCode};
 use std::time::SystemTime;
 use serde::{Serialize, Deserialize};
 use serde_json;
 use url::Url;
+use rocket::request::{Form, LenientForm};
+
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Post
@@ -20,6 +22,28 @@ struct Post
     body: Option<String>,
 }
 
+#[derive(FromForm)]
+struct PostQuery
+{
+    author: Option<String>,
+    tag: Option<Vec<String>>,
+    title: Option<String>,
+    catagory: Option<String>
+}
+
+#[get("/db/find?<query..>")]
+fn find(query: Option<Form<PostQuery>>) -> String
+{
+"hellow world".into()
+}
+
+#[launch]
+fn rocket() -> rocket::Rocket
+{
+    rocket::ignite().mount("/", routes![find])
+}
+
+// uses ser to make a new type that can be converted into new formats
 #[derive(Serialize, Deserialize, Debug)]
 struct PostDatabase {
     posts: Vec<Post>
@@ -105,16 +129,16 @@ async fn post_server(req: Request<Body>) -> Result<Response<Body>, Infallible> {
 }
 
 
-#[tokio::main]
-pub async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    let make_svc = make_service_fn(|_conn| {
-        async { Ok::<_, Infallible>(service_fn(post_server)) }
-    });
+// #[tokio::main]
+// pub async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+//     let make_svc = make_service_fn(|_conn| {
+//         async { Ok::<_, Infallible>(service_fn(post_server)) }
+//     });
 
-    let addr = ([127, 0, 0, 1], 3000).into();
-    let server = Server::bind(&addr).serve(make_svc);
-    println!("Listening on http://{}", addr);
-    server.await?;
+//     let addr = ([127, 0, 0, 1], 3000).into();
+//     let server = Server::bind(&addr).serve(make_svc);
+//     println!("Listening on http://{}", addr);
+//     server.await?;
 
-    Ok(())
-}
+//     Ok(())
+// }
