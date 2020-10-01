@@ -6,6 +6,8 @@ use std::time::SystemTime;
 use serde::{Serialize, Deserialize};
 use rocket_contrib::json::JsonValue;
 use rocket_contrib::templates::Template;
+use rocket_contrib::serve::StaticFiles;
+
 
 mod post;
 use post::*;
@@ -129,6 +131,13 @@ fn post(uuid: u32) -> Template
     }
 }
 
+#[get("/jin")]
+fn we() -> String
+{
+    "Jin".into()
+}
+
+
 fn main()
 {
     unsafe
@@ -136,8 +145,9 @@ fn main()
         load_db(&mut DB);
     }
 
-    let routes = routes![index, post, get_post, list_posts];
-    let server = rocket::ignite().mount("/", routes).attach(Template::fairing());
+   
+    let routes = routes![index, post, get_post, list_posts, we];
+    let server = rocket::ignite().mount("/", routes).mount("/assets", StaticFiles::from("./assets")).attach(Template::fairing());
 
     server.launch();
 }
