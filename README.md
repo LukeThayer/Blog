@@ -1,4 +1,8 @@
-Features:
+
+# WIP
+This project was my intro to learning rust and is still early on in its development
+
+Planned Features:
 
      - post
         - title
